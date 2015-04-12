@@ -8,41 +8,46 @@
 ```
 
 # RPC interfaces for your web workers
-Worker.IO automatically creates interfaces from object's inside workers and allows you to use then from browser's main thread. Created Interfaces utilizes `postMessage` mechanism and returns Promises/A+ compliant results.
+Worker.IO automatically creates interfaces from object's inside workers and allows you to use them from browser's main thread. Created Interfaces utilizes `postMessage` mechanism and returns Promises/A+ compliant results.
 
 ## Example usage:
     
 **worker.js**
-  
-    var shoutService = {
 
-        pssst: function() {
-	        return 'pssst!!!';
-        },
+```js  
+var shoutService = {
 
-        shout: function (name) {
-            return 'Hello + name;
-        }
-    };
+	pssst: function() {
+		return 'pssst!!!';
+	},
+	
+	shout: function (name) {
+		return 'Hello + name;
+	}
+};
 
-    Server.create({port: self})
-        .publishInterface('shoutService', shoutService);
+Server.create({port: self})
+	.publishInterface('shoutService', shoutService);
+
+```
 
 **app.js**
   
-     var client = Client.create({
-	     port: new Worker('worker.js'), 
-	     iface: 'shoutService'
-	 });
-     
-     client.getInterface().then(function (ShoutService) {
-          var shoutService = ShoutService.create();
-          shoutService.shout('Michael')
-	          .then(function (result) {
-					console.log(result);
-					// Hello Michael
-               });
-     });
+```js  
+var client = Client.create({
+     port: new Worker('worker.js'), 
+     iface: 'shoutService'
+ });
+
+client.getInterface().then(function (ShoutService) {
+        var shoutService = ShoutService.create();
+        shoutService.shout('Michael')
+          	.then(function (result) {
+			console.log(result);
+			// Hello Michael
+       });
+});
+```
 
 ## Roadmap
 Worker IO is currently WIP. Future plans are:
@@ -50,7 +55,9 @@ Worker IO is currently WIP. Future plans are:
 - make including package easier in worker (currently requirejs is needed)
 - finish the docs
 - support promises returned by proxied methods
+- better errror handling
 - create property builder for setting/getting properties and even objects
+- filter properties to be interfaced
 
 ## Test and build
 Test
