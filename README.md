@@ -58,13 +58,12 @@ var client = window.workerio.Client.create({
 client.getInterface().then(function (ShoutService) {
 
         // use the shoutService
-
         var shoutService = ShoutService.create();
         shoutService.shout('Michael')
           	.then(function (result) {
 			console.log(result);
 			// Hello Michael
-       });
+       		});
 });
 ```
 In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object
