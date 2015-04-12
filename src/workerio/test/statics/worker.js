@@ -4,6 +4,12 @@ importScripts('./../dist/workerio.js');
 
 var shoutService = {
 
+    valueOfObject: 'value-of-object',
+
+    getValueOfObject: function() {
+        return this.valueOfObject;
+    },
+
     shout: function (text) {
         return text;
     },
