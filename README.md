@@ -63,15 +63,13 @@ client.getInterface().then(function (ShoutService) {
         shoutService
         	.shout('Michael')
    		.then(function (result) {
-          		console.log(result);
-			// Hello Michael
+          		console.log(result); // Hello Michael
        		});
 
         shoutService
         	.pssst('Michael')
    		.then(function (result) {
-          		console.log(result);
-			// now it is silence here :)
+          		console.log(result); // now it is silence here :)
        		});
        		
        		
