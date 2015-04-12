@@ -142,7 +142,7 @@ Wraps communication between `Server` and `Client` over port to some standardized
 ## What can be proxied
 - synchronous methods of objects 
 - asynchronous method of object which returns Promise/A+
-- properties of objects - are proxies as getters and setters (currently wip)
+- properties of objects - as automatically generated getters and setters (currently wip)
 
 
 
