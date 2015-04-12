@@ -95,7 +95,7 @@ More servers and thus more interfaces could be run around single port. Server ca
 
 Should be created in browser's main thread around the port. Client retrieves interface definition from server
 and builds interface class for you. You can then extend the interface class to override or implement new methods.
-The `iface` name must be same as the server one. Server can provide up to single interface.
+The `iface` name must be same as the server one. Client can provide up to single interface.
 
 
 extend client interface:
