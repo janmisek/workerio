@@ -63,13 +63,13 @@ client.getInterface().then(function (ShoutService) {
         shoutService
              .shout('Michael')
              .then(function (result) {
-                 console.log(result); // Hello Michael
+                console.log(result); // Hello Michael
        	      });
 
         shoutService
               .pssst('Michael')
               .then(function (result) {
-        	  console.log(result); // now it is silence here :)
+                console.log(result); // now it is silence here :)
        	      });
        		
        		
@@ -107,17 +107,18 @@ client.getInterface().then(function (ShoutService) {
 	var MyShoutService = ShoutService.extend({
 		shout: function(name) {
 			var supr = ShoutService.prototype.shout.apply(this,arguments);
-
 			return supr.then(function(result) {
-				return result + ', How are you?';
+                           return result + ', How are you?';
 			});
 		}
 	});
 
 	var shoutService = MyShoutService.create();
-    	shoutService.shout('Michael').then(function (result) {
-	         console.log(result); // Hello Michael, How are you?
-    	});
+    	shoutService
+    	    .shout('Michael')
+    	    .then(function (result) {
+    	        console.log(result); // Hello Michael, How are you?
+    	    });
 });
 
 ```
