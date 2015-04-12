@@ -67,7 +67,7 @@ client.getInterface().then(function (ShoutService) {
        	      });
 
         shoutService
-              .pssst('Michael')
+              .pssst()
               .then(function (result) {
                 console.log(result); // now it is silence here :)
        	      });
