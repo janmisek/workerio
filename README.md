@@ -113,11 +113,9 @@ client.getInterface().then(function (ShoutService) {
 	});
 
 	var shoutService = MyShoutService.create();
-    shoutService.shout('Michael')
-          	.then(function (result) {
-				console.log(result);
-				// Hello Michael, How are you?
-    });
+    	shoutService.shout('Michael').then(function (result) {
+		console.log(result); // Hello Michael, How are you?
+    	});
 });
 
 ```
