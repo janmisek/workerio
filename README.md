@@ -61,14 +61,12 @@ client.getInterface().then(function (ShoutService) {
         var shoutService = ShoutService.create();
         
         shoutService
-        .shout('Michael')
-   	.then(function (result) {
+        .shout('Michael').then(function (result) {
         	console.log(result); // Hello Michael
        	});
 
         shoutService
-        .pssst('Michael')
-   	.then(function (result) {
+        .pssst('Michael').then(function (result) {
         	console.log(result); // now it is silence here :)
        	});
        		
