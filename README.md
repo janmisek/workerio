@@ -49,6 +49,7 @@ Worker IO is currently WIP. Future plans are follows:
 
 - make including package easier in worker (currently requirejs is needed)
 - finish the docs
+- support promises returned by proxied methods
 - create property builder for setting/getting properties and even objects
 
 ## Test and build
