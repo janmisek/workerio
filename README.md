@@ -13,36 +13,41 @@ Worker.IO automatically creates interfaces from object's inside workers and allo
 ## Example usage:
     
 **worker.js**
-  
-    var shoutService = {
 
-        pssst: function() {
-	        return 'pssst!!!';
-        },
+```js  
+var shoutService = {
 
-        shout: function (name) {
-            return 'Hello + name;
-        }
-    };
+	pssst: function() {
+		return 'pssst!!!';
+	},
+	
+	shout: function (name) {
+		return 'Hello + name;
+	}
+};
 
-    Server.create({port: self})
-        .publishInterface('shoutService', shoutService);
+Server.create({port: self})
+	.publishInterface('shoutService', shoutService);
+
+```
 
 **app.js**
   
-     var client = Client.create({
-	     port: new Worker('worker.js'), 
-	     iface: 'shoutService'
-	 });
-     
-     client.getInterface().then(function (ShoutService) {
-          var shoutService = ShoutService.create();
-          shoutService.shout('Michael')
-	          .then(function (result) {
-					console.log(result);
-					// Hello Michael
-               });
-     });
+```js  
+var client = Client.create({
+     port: new Worker('worker.js'), 
+     iface: 'shoutService'
+ });
+
+client.getInterface().then(function (ShoutService) {
+        var shoutService = ShoutService.create();
+        shoutService.shout('Michael')
+          	.then(function (result) {
+			console.log(result);
+			// Hello Michael
+       });
+});
+```
 
 ## Roadmap
 Worker IO is currently WIP. Future plans are:
