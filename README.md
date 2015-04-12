@@ -59,11 +59,22 @@ client.getInterface().then(function (ShoutService) {
 
         // use the shoutService
         var shoutService = ShoutService.create();
-        shoutService.shout('Michael')
-          	.then(function (result) {
-			console.log(result);
+        
+        shoutService
+        	.shout('Michael')
+   		.then(function (result) {
+          		console.log(result);
 			// Hello Michael
        		});
+
+        shoutService
+        	.pssst('Michael')
+   		.then(function (result) {
+          		console.log(result);
+			// now it is silence here :)
+       		});
+       		
+       		
 });
 ```
 In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object
