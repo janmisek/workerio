@@ -142,7 +142,6 @@ Wraps communication between `Server` and `Client` over port to some standardized
 ## Roadmap
 Worker IO is currently WIP. Future plans are:
 
-- make including package easier in worker (currently requirejs is needed)
 - finish the docs
 - better errror handling
 - create property builder for setting/getting properties and even objects
