@@ -27,6 +27,39 @@ require(['workerio/platform/platform', 'workerio/client', 'workerio/server'],
             });
         });
 
+        test('Should be possible to extend built interface', function () {
+            return new Platform.Promise(function (resolve) {
+
+                var worker = new Worker('worker.js');
+                var client = Client.create({port: worker, iface: 'shoutService'});
+                client.getInterface().then(function (ShoutService) {
+
+                    var MyShoutService = ShoutService.extend({
+                        shout: function(name) {
+                            var supr = ShoutService.prototype.shout.apply(this,arguments);
+
+                            return supr.then(function(result) {
+                                return result + ', How are you?';
+                            });
+                        }
+                    });
+
+                    var shoutService = MyShoutService.create();
+
+                    shoutService.shout('Hello Michael')
+                        .then(function (result) {
+                            equal(result, 'Hello Michael, How are you?');
+                            resolve();
+                        });
+
+
+
+                });
+
+            });
+        });
+
+
         test('Engine works for multiple calls', function () {
             return new Platform.Promise(function (resolve) {
 
