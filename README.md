@@ -33,6 +33,9 @@ var shoutService = {
 
 };
 
+// import workerio
+importScripts('workerio.js');
+
 // lets publish shoutService to client
 Server.create({port: self})
 	.publishInterface('shoutService', shoutService);
@@ -46,7 +49,7 @@ define client in main browser thread:
 ```js
 
 // create the client
-var client = Client.create({
+var client = window.workerio.Client.create({
      port: new Worker('worker.js'), 
      iface: 'shoutService'
 });
