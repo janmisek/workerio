@@ -58,13 +58,21 @@ var client = window.workerio.Client.create({
 client.getInterface().then(function (ShoutService) {
 
         // use the shoutService
-
         var shoutService = ShoutService.create();
-        shoutService.shout('Michael')
-          	.then(function (result) {
-			console.log(result);
-			// Hello Michael
-       });
+        
+        shoutService
+             .shout('Michael')
+             .then(function (result) {
+                console.log(result); // Hello Michael
+       	      });
+
+        shoutService
+              .pssst()
+              .then(function (result) {
+                console.log(result); // now it is silence here :)
+       	      });
+       		
+       		
 });
 ```
 In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object
@@ -87,7 +95,7 @@ More servers and thus more interfaces could be run around single port. Server ca
 
 Should be created in browser's main thread around the port. Client retrieves interface definition from server
 and builds interface class for you. You can then extend the interface class to override or implement new methods.
-The `iface` name must be same as the server one. Server can provide up to single interface.
+The `iface` name must be same as the server one. Client can provide up to single interface.
 
 
 extend client interface:
@@ -97,21 +105,20 @@ extend client interface:
 client.getInterface().then(function (ShoutService) {
 	
 	var MyShoutService = ShoutService.extend({
-		shout: function(name) {
-			var supr = ShoutService.prototype.shout.apply(this,arguments);
-
-			return supr.then(function(result) {
-				return result + ', How are you?';
-			});
-		}
+	    shout: function(name) {
+	       var supr = ShoutService.prototype.shout.apply(this,arguments);
+	       return supr.then(function(result) {
+                   return result + ', How are you?';
+                });
+             }
 	});
 
 	var shoutService = MyShoutService.create();
-    shoutService.shout('Michael')
-          	.then(function (result) {
-				console.log(result);
-				// Hello Michael, How are you?
-    });
+    	shoutService
+    	    .shout('Michael')
+    	    .then(function (result) {
+    	        console.log(result); // Hello Michael, How are you?
+    	    });
 });
 
 ```
@@ -135,7 +142,7 @@ Wraps communication between `Server` and `Client` over port to some standardized
 ## What can be proxied
 - synchronous methods of objects 
 - asynchronous method of object which returns Promise/A+
-- properties of objects - are proxies as getters and setters (currently wip)
+- properties of objects - as automatically generated getters and setters (currently wip)
 
 
 
