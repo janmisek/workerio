@@ -24,7 +24,7 @@ var FunctionPropertyBuilder = Platform.Object.extend({
     /**
      * Builds methods used on client interface to execute server methods
      * Using connection
-     * @param {workerio.connection.Connection}
+     * @param {workerio.connection.Connection} connection
      * @param {Object} serverDefinition definition of interface received from server
      * @param {Object} mixin contains built definition
      * @param {String} propertyName name of property of interface
@@ -49,10 +49,10 @@ var FunctionPropertyBuilder = Platform.Object.extend({
     /**
      * Builds methods on server interface to listen and respond to incomming methods call from client.
      * Using connection
-     * @param {workerio.connection.Connection}
+     * @param {workerio.connection.Connection} connection
      * @param {Object} implementation object to be proxied on client
      * @param {Object} mixin to add implementation definition
-     * @param {String} propertyName property to be built
+     * @param {String} propertyName property name to be built
      * @returns void
      */
     buildServerInterface: function (connection, implementation, mixin, propertyName) {
