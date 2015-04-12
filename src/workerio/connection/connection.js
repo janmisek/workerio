@@ -1,6 +1,14 @@
 import Platform from './../platform/platform';
 /* global addEventListener */
 
+/**
+ * Connection encapsulates all worker or window port and provides standardized
+ * interface for client and server to communicate with each other
+ * 
+ * @module workerio
+ * @namespace workerio.connection
+ * @class Connection
+ */
 var Connection = Platform.Object.extend(
     Platform.Evented,
     {
@@ -33,8 +41,8 @@ var Connection = Platform.Object.extend(
                 var data = event.data;
 
                 // ignore non workerio messages
-                if (data.id === Connection.MSG_IDENITY) {
-
+                // ignore messages from other connections
+                if (data.prt === Connection.MSG_PROTOCOL && data.ifc === this.iface ) {
                     this.trigger('message', data);
 
                     if (data.t === Connection.MSG_TYPE_REQUEST) {
@@ -78,9 +86,10 @@ var Connection = Platform.Object.extend(
 
         },
 
-        sendDefition: function (serverDefinition) {
+        sendDefinition: function (serverDefinition) {
             this.port.postMessage({
-                id: Connection.MSG_IDENITY,
+                prt: Connection.MSG_PROTOCOL,
+                ifc: this.iface,
                 t: Connection.MSG_TYPE_DEFINITION,
                 def: serverDefinition
             });
@@ -115,9 +124,9 @@ var Connection = Platform.Object.extend(
 
         respond: function (request, args) {
             var response = {
-                id: Connection.MSG_IDENITY,
+                prt: Connection.MSG_PROTOCOL,
                 t: Connection.MSG_TYPE_RESPONSE,
-                ifc: this.if,
+                ifc: this.iface,
                 d: request.d,
                 a: args
             };
@@ -134,7 +143,7 @@ var Connection = Platform.Object.extend(
             //@todo: better random dialog
             // create request object
             request = {
-                id: Connection.MSG_IDENITY,
+                prt: Connection.MSG_PROTOCOL,
                 t: Connection.MSG_TYPE_REQUEST,
                 ifc: this.iface,
                 d: Math.random(),
@@ -174,7 +183,7 @@ Object.defineProperty(Connection, 'MSG_TYPE_DEFINITION', {
     writable: false
 });
 
-Object.defineProperty(Connection, 'MSG_IDENITY', {
+Object.defineProperty(Connection, 'MSG_PROTOCOL', {
     value: 'wio',
     writable: false
 });

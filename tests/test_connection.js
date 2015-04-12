@@ -90,7 +90,7 @@ require(['workerio/connection/connection', 'workerio/platform/platform'],
                 equal(def.method, 'function');
             });
 
-            c.sendDefition({
+            c.sendDefinition({
                 method: 'function'
             });
 
@@ -105,7 +105,7 @@ require(['workerio/connection/connection', 'workerio/platform/platform'],
                 port: port
             });
 
-            c.sendDefition({
+            c.sendDefinition({
                 method: 'function'
             });
 
@@ -138,6 +138,52 @@ require(['workerio/connection/connection', 'workerio/platform/platform'],
             });
 
         });
+
+        test('messages should be consumed by proper connection', function () {
+            var port = mockedPort();
+
+            var i = 0;
+            var j = 0;
+
+            var c1 = Connection.create({
+                autoDefinitionRetrieval: false,
+                iface: 'iface1',
+                port: port
+            });
+
+            var c2 = Connection.create({
+                autoDefinitionRetrieval: false,
+                iface: 'iface2',
+                port: port
+            });
+
+
+            c1.on('request', function (msg) {
+                i++;
+            });
+
+            c2.on('request', function (msg) {
+                j++;
+            });
+
+            port.postMessage({
+                ifc: 'iface1',
+                t: Connection.MSG_TYPE_REQUEST,
+                prt: Connection.MSG_PROTOCOL
+            });
+
+            port.postMessage({
+                ifc: 'iface2',
+                t: Connection.MSG_TYPE_REQUEST,
+                prt: Connection.MSG_PROTOCOL
+            });
+
+            equal(i, 1);
+            equal(j,1);
+
+        });
+
+
 
         test('response mismatch cannot happen', function () {
             var port = mockedPort();

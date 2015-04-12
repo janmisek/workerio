@@ -29,7 +29,7 @@ var Server = Platform.Object.extend({
 
         this.built = this.builder.buildServerInterface(this.connection, implementation).create();
 
-        this.connection.sendDefition(this.built.serverDefinition);
+        this.connection.sendDefinition(this.built.serverDefinition);
 
         return this.built;
     }
