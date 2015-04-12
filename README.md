@@ -105,12 +105,12 @@ extend client interface:
 client.getInterface().then(function (ShoutService) {
 	
 	var MyShoutService = ShoutService.extend({
-		shout: function(name) {
-			var supr = ShoutService.prototype.shout.apply(this,arguments);
-			return supr.then(function(result) {
-                           return result + ', How are you?';
-			});
-		}
+	    shout: function(name) {
+	       var supr = ShoutService.prototype.shout.apply(this,arguments);
+	       return supr.then(function(result) {
+                   return result + ', How are you?';
+                });
+             }
 	});
 
 	var shoutService = MyShoutService.create();
