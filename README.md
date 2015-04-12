@@ -8,7 +8,7 @@
 ```
 
 # RPC interfaces for your web workers
-Worker.IO automatically creates interfaces from object's inside workers and allows you to use then from browser's main thread. Created Interfaces utilizes `postMessage` mechanism and returns Promises/A+ compliant results.
+Worker.IO automatically creates interfaces from object's inside workers and allows you to use them from browser's main thread. Created Interfaces utilizes `postMessage` mechanism and returns Promises/A+ compliant results.
 
 ## Example usage:
     
@@ -55,7 +55,9 @@ Worker IO is currently WIP. Future plans are:
 - make including package easier in worker (currently requirejs is needed)
 - finish the docs
 - support promises returned by proxied methods
+- better errror handling
 - create property builder for setting/getting properties and even objects
+- filter properties to be interfaced
 
 ## Test and build
 Test
