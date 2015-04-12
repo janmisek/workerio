@@ -8,13 +8,19 @@
 ```
 
 # RPC interfaces for your web workers
-Worker.IO automatically creates interfaces from object's inside workers and allows you to use them from browser's main thread. Created Interfaces utilizes `postMessage` mechanism and returns Promises/A+ compliant results.
+Worker.IO automatically creates interfaces from object's inside workers and allows you to use them
+from browser's main thread. Created Interfaces utilizes `postMessage` mechanism
+and returns Promises/A+ compliant results.
 
 ## Example usage:
     
 **worker.js**
 
-```js  
+
+define server in worker's thread:
+```js
+
+// shoutService is object we want to have proxied on client
 var shoutService = {
 
 	shout: function (name) {
@@ -27,6 +33,7 @@ var shoutService = {
 
 };
 
+// lets publish shoutService to client
 Server.create({port: self})
 	.publishInterface('shoutService', shoutService);
 
@@ -34,13 +41,21 @@ Server.create({port: self})
 
 **app.js**
   
-```js  
+
+define client in main browser thread:
+```js
+
+// create the client
 var client = Client.create({
      port: new Worker('worker.js'), 
      iface: 'shoutService'
- });
+});
 
+// get shout service interface
 client.getInterface().then(function (ShoutService) {
+
+        // use the shoutService
+
         var shoutService = ShoutService.create();
         shoutService.shout('Michael')
           	.then(function (result) {
@@ -49,19 +64,32 @@ client.getInterface().then(function (ShoutService) {
        });
 });
 ```
-In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object `shoutService` to workerio `Client` ran in browser thread.  Client did create for us proxy object with same interface as the worker's shoutService.  So we can call any method of the worker object from window.  
+In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object
+`shoutService` to workerio `Client` ran in browser thread.  Client did create for us proxy object with same interface
+as the worker's shoutService.  So we can call any method of the worker object from window.
 
-Because interprocess communication between main browser thread and worker utilizes asynchronous `postMessage` mechanism all executions on client interface returns promises compliant with Promise/A+.
+Because interprocess communication between main browser thread and worker utilizes asynchronous `postMessage`
+mechanism all executions on client interface returns promises compliant with Promise/A+.
 
 ## API
 
 **Server**
-Should be created in worker around the worker's port. Port is usually `self`. Server should publish its interface to client by `publishInterface` method. Server must be named. The `iface` name is used to pair communication between server and client. More servers and thus more interfaces could be run around single port. Server can provide up to single interface.
+
+Should be created in worker around the worker's port. Port is usually `self`.
+Server should publish its interface to client by `publishInterface` method. Server must be named.
+The `iface` name is used to pair communication between server and client.
+More servers and thus more interfaces could be run around single port. Server can provide up to single interface.
 
 **Client**
-Should be created in browser's main thread around the port. Client retrieves interface definition from server and builds interface class for you. You can then extend the interface class to override or implement new methods. The `iface` name must be same as the server one. Server can provide up to single interface.
 
+Should be created in browser's main thread around the port. Client retrieves interface definition from server
+and builds interface class for you. You can then extend the interface class to override or implement new methods.
+The `iface` name must be same as the server one. Server can provide up to single interface.
+
+
+extend client interface:
 ```js
+
 
 client.getInterface().then(function (ShoutService) {
 	
@@ -87,12 +115,15 @@ client.getInterface().then(function (ShoutService) {
 
 
 **Port**
+
 Generally Worker.IO could work with any port implementation as `window`, `Worker`, `SharedWorker` or even custom made port. Port must implement `postMessage` method and `message` event. 
 
 **Connection**
+
 Wraps communication between `Server` and `Client` over port to some standardized interface
 
 **Builder**
+
 `Builder` is used to build client interfaces (the classes) and to prepare definition of interface to be sent by `Server` to the `Client`. Builder utilizes `PropertyBuilders` which builds proxy methods on client interface for each property of interfaced object depending on its type.
 
 
