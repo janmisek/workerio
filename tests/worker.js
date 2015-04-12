@@ -6,9 +6,15 @@ importScripts('./../dist/workerio.js');
 require(['workerio/server'], function (Server) {
 
     var shoutService = {
+
         shout: function (text) {
             return text;
+        },
+
+        shoutAsynchronously: function(text) {
+            return Promise.resolve(text);
         }
+
     };
 
     Server
