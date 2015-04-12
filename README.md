@@ -45,7 +45,7 @@ Worker.IO automatically creates interfaces from object's inside workers and allo
      });
 
 ## Roadmap
-Worker IO is currently WIP. Future plans are follows:
+Worker IO is currently WIP. Future plans are:
 
 - make including package easier in worker (currently requirejs is needed)
 - finish the docs
