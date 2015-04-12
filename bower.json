@@ -1,0 +1,34 @@
+{
+  "name": "workerio",
+  "version": "0.0.0",
+  "authors": [
+    "Jan Misek"
+  ],
+  "description": "RPC interfaces for your web workers",
+  "moduleType": [
+    "amd",
+    "es6",
+    "globals"
+  ],
+  "keywords": [
+    "worker",
+    "webworker",
+    "interface",
+    "rpc",
+    "promise",
+    "proxy"
+  ],
+  "license": "MIT",
+  "homepage": "http://githubcom.com/janmisek/workerio",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "qunit": "~1.18.0"
+  }
+}

@@ -1,0 +1,6 @@
+archive
+node_modules
+bower_components
+tmp
+dist
+.idea
