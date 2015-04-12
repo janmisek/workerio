@@ -1,6 +1,9 @@
 /* global require, module, test, ok, equal, deepEqual, throws */
 
-require(['workerio/platform/platform'], function (Platform) {
+import Platform from './../platform/platform';
+
+export default function () {
+
     module('platform evented tests', {});
 
     test('on event should work', function () {
@@ -74,4 +77,4 @@ require(['workerio/platform/platform'], function (Platform) {
     });
 
 
-});
+}

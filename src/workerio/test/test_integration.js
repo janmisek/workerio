@@ -1,7 +1,10 @@
 /* global require, module, test, ok, equal, deepEqual */
 
-require(['workerio/platform/platform', 'workerio/client', 'workerio/server'],
-    function (Platform, Client, Server) {
+import Client from './../client';
+import Server from './../server';
+import Platform from './../platform/platform';
+
+export default function () {
 
         module('integration client/server test', {});
 
@@ -104,7 +107,5 @@ require(['workerio/platform/platform', 'workerio/client', 'workerio/server'],
 
             });
         });
-        
-        
 
-    });
+    }

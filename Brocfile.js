@@ -1,12 +1,11 @@
 /* global module, require */
-var esTranspiler = require('broccoli-babel-transpiler');
+var babelTranspiler = require('broccoli-babel-transpiler');
 var mergeTrees = require('broccoli-merge-trees');
 var pickFiles = require('broccoli-static-compiler');
-var concatenate = require('broccoli-concat');
-var uglifyJs = require('broccoli-uglify-js');
 var path = require('path');
+var ES6Modules = require('broccoli-es6modules');
 
-var dist = '/dist';
+var dist = './dist';
 
 var statics = function (sourceDir, files, outputPath) {
     files = Array.isArray(files) ? files : [files];
@@ -22,37 +21,44 @@ var statics = function (sourceDir, files, outputPath) {
 };
 
 var bundler = function (sourceDir, app, options) {
-    var inputPath = path.resolve(sourceDir);
-    var outputPath = path.join(dist, app+'.js');
-    options = options || {}
-    options.moduleIds = true;
-    options.filterExtensions = ['js'];
-    options.modules = options.modules || 'umd';
-    options.moduleRoot = app;
-    var transpiled = esTranspiler(inputPath, options);
+    options = options || {};
+    options.entry = options.entry || 'index.js';
+    options.dist = options.dist || dist;
 
-    var concatenated = concatenate(transpiled, {
+    var babelized = babelTranspiler(sourceDir, {
+        blacklist: options.blacklist || ['es6.modules']
+    });
+
+    var modularized = new ES6Modules(babelized, {
+        esperantoOptions: {
+            name: app,
+            amdName: app
+        },
+        bundleOptions: {
+            entry: options.entry,
+            name: app
+        },
+        format: 'umd'
+    });
+
+    var inDist = pickFiles(modularized, {
         srcDir: './',
-        inputFiles : ['**/*.js'],
-        outputFile : outputPath
+        destDir: options.dist
     });
 
-    var uglified = uglifyJs(concatenated, {
-        compress: true
-    });
-
-    return uglified;
+    return inDist;
 };
 
 
 var trees = mergeTrees([
 
-    bundler('src/workerio', 'workerio'),
+    bundler('./src/workerio', 'workerio'),
+    bundler('./src/workerio', 'workerio', {dist: 'tests', entry: 'test/index.js'}),
 
-    statics('node_modules/requirejs', 'require.js', './vendors'),
-    statics('bower_components/qunit/qunit', '*.*', './vendors'),
-    statics('tests', '*.*', './tests'),
+    statics('./bower_components/qunit/qunit', '*.*', './vendors'),
+    statics('./src/workerio/test/statics', '*.*', './tests')
 
 ]);
 
 module.exports = trees;
+

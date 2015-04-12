@@ -1,6 +1,9 @@
 /* global require, module, test, ok, equal, deepEqual */
 
-require(['workerio/builder/interface-builder'], function (Builder) {
+
+import Builder from './../builder/interface-builder';
+
+export default function () {
 
     module('builder tests', {});
 
@@ -45,4 +48,4 @@ require(['workerio/builder/interface-builder'], function (Builder) {
     });
 
 
-});
+}
