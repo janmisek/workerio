@@ -52,10 +52,10 @@ var bundler = function (sourceDir, app, options) {
 
 var trees = mergeTrees([
 
-    bundler('./src/workerio', 'workerio'),
+    bundler('./src/workerio', 'workerio', {dist: '.'}),
     bundler('./src/workerio', 'workerio', {dist: 'tests', entry: 'test/index.js'}),
 
-    statics('./bower_components/qunit/qunit', '*.*', './vendors'),
+    statics('./node_modules/qunitjs/qunit', '*.*', './vendors'),
     statics('./src/workerio/test/statics', '*.*', './tests')
 
 ]);

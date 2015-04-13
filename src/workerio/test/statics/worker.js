@@ -1,6 +1,6 @@
 /*global importScripts, self  */
 
-importScripts('./../dist/workerio.js');
+importScripts('./../workerio.js');
 
 var shoutService = {
 

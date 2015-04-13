@@ -1,10 +1,10 @@
 {
   "name": "workerio",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "authors": [
     "Jan Misek"
   ],
-  "description": "RPC interfaces for your web workers",
+  "description": "Worker.IO - RPC interfaces for your web workers, Promise/A+ compliant",
   "moduleType": [
     "amd",
     "es6",
@@ -27,8 +27,5 @@
     "bower_components",
     "test",
     "tests"
-  ],
-  "devDependencies": {
-    "qunit": "~1.18.0"
-  }
+  ]
 }

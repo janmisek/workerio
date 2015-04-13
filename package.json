@@ -1,25 +1,36 @@
 {
+  "name": "workerio",
+  "description": "Worker.IO - RPC interfaces for your web workers, Promise/A+ compliant",
+  "homepage": "https://github.com/janmisek/workerio",
+  "author": "Jan Misek <jan.misek@rclick.cz> (https://github.com/janmisek)",
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/janmisek/workerio/blob/master/LICENSE.txt"
+  },
+  "bugs": {
+    "url": "https://github.com/janmisek/workerio/issues"
+  },
+  "keywords": [
+    "interface",
+    "proxy",
+    "worker",
+    "promise",
+    "webworker",
+    "javascript"
+  ],
+  "main": "build/workerio.js",
+  "scripts": {
+    "build": "gulp build",
+    "test": "gulp archive && mocha --reporter spec --timeout 5000"
+  },
   "devDependencies": {
     "broccoli": "^0.15.3",
     "broccoli-babel-transpiler": "^5.0.0",
     "broccoli-es6modules": "^0.5.1",
     "broccoli-merge-trees": "^0.2.1",
     "broccoli-static-compiler": "^0.2.1",
-    "qunit": "^0.7.5"
+    "qunitjs": "^1.18.0"
   },
-  "engines": {
-    "node": ">=0.10.0"
-  },
-  "homepage": "https://github.com/janmisek/workerio/",
-  "license": {
-    "type": "MIT",
-    "url": "https://github.com/janmisek/workerio/blob/master/LICENSE.txt"
-  },
-  "name": "workerio",
-  "private": true,
-  "scripts": {
-    "build": "gulp build",
-    "test": "gulp archive && mocha --reporter spec --timeout 5000"
-  },
-  "version": "0.0.0"
+  "private": false,
+  "version": "0.1.0"
 }
