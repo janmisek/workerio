@@ -20,7 +20,7 @@
   ],
   "license": "MIT",
   "homepage": "http://githubcom.com/janmisek/workerio",
-  "private": true,
+  "private": false,
   "ignore": [
     "**/.*",
     "node_modules",
