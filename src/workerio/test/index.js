@@ -21,16 +21,18 @@ QUnit.log(function (details) {
     }
 });
 
-import TestPlatformObject from './test_platform_object';
-import TestPlatformEvented from './test_platform_evented';
-import TestBuilder from './test_builder';
-import TestConnection from './test_connection';
-import TestIntegration from './test_integration';
+import TestPlatformObject from './test-platform-object';
+import TestPlatformEvented from './test-platform-evented';
+import TestPlatformDeferred from './test-platform-deferred';
+import TestBuilder from './test-builder';
+import TestConnection from './test-connection';
+import TestIntegration from './test-integration';
 
 
 
 TestPlatformObject();
 TestPlatformEvented();
+TestPlatformDeferred();
 TestBuilder();
 TestConnection();
 TestIntegration();

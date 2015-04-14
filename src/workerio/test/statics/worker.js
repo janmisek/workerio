@@ -6,8 +6,12 @@ var shoutService = {
 
     valueOfObject: 'value-of-object',
 
-    getValueOfObject: function() {
+    getValueOfObject: function () {
         return this.valueOfObject;
+    },
+
+    moreParametersReturnsObject: function(param1, param2) {
+        return {param1: param1, param2: param2};
     },
 
     shout: function (text) {

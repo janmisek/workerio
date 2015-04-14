@@ -176,6 +176,7 @@ Worker IO is currently WIP. Future plans are:
 - ability to specify base class for interface proxy
 - create property builder for setting/getting properties and even objects
 - filter properties to be interfaced
+- make compatibile with window - target origin is needed Failed to execute 'postMessage' on 'Window': Invalid target origin '' in a call to 'postMessage'
 
 ## Test and build
 Test
