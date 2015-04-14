@@ -17,7 +17,7 @@ var Client = Platform.Object.extend({
         this.builder = Builder.create();
     },
 
-    getInterface: function (name) {
+    getInterface: function () {
         if (this.built) {
             return Platform.ResolvedPromise(this.built);
         } else {

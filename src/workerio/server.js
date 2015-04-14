@@ -21,6 +21,7 @@ var Server = Platform.Object.extend({
         this.iface = iface;
 
         this.connection = Connection.create({
+            autoDefinitionRetrieval: false,
             iface: this.iface,
             port: this.port
         });
