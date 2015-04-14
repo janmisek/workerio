@@ -16,7 +16,7 @@
         return new WorkerIOObject();
     }
 
-    var object__create = function create() {
+    var platform_object__create = function create() {
         var args = Array.prototype.slice.call(arguments);
         return construct(this, args);
     };
@@ -74,14 +74,14 @@
         constructor.prototype = prototype;
         constructor.prototype.constructor = prototype.constructor || constructor;
         constructor.extend = extend;
-        constructor.create = object__create;
+        constructor.create = platform_object__create;
 
         return constructor;
     });
 
     var BaseObject = extend.apply(function () {});
 
-    var object = BaseObject;
+    var platform_object = BaseObject;
 
     "use strict";
 
@@ -172,25 +172,39 @@
 
     "use strict";
 
-    var deferred__ResolvedPromise = function ResolvedPromise() {
-        var args = arguments;
-        return new Promise(function (resolve) {
-            resolve.apply(resolve, args);
+    var Deffered__HashedPromises = function HashedPromises(object) {
+        var promises = [];
+        var keys = [];
+        for (var key in object) {
+            if (object.hasOwnProperty(key)) {
+                promises.push(object[key]);
+                keys.push(key);
+            }
+        }
+        return Promise.all(promises).then(function (results) {
+            for (var i = 0; i < results.length; i++) {
+                var result = results[i];
+                object[keys[i]] = results[i];
+            }
+            return object;
         });
     };
 
-    var deferred = {
-        Promise: Promise,
-        ResolvedPromise: deferred__ResolvedPromise
+    var Deffered = {
+        AllPromises: Promise.all.bind(Promise),
+        ResolvedPromise: Promise.resolve.bind(Promise),
+        HashedPromises: Deffered__HashedPromises
     };
 
     'use strict';
 
     var Platform = {
-        Promise: deferred.Promise,
-        ResolvedPromise: deferred.ResolvedPromise,
+        Promise: Promise,
+        ResolvedPromise: Deffered.ResolvedPromise,
+        AllPromises: Deffered.AllPromises,
+        HashedPromises: Deffered.HashedPromises,
         Evented: evented,
-        Object: object
+        Object: platform_object
     };
 
     'use strict';
@@ -455,7 +469,7 @@
             if (!this.serverDefinition) {
                 this.serverDefinition = this.waitForMessage(function (response) {
                     return response.t === Connection.MSG_TYPE_DEFINITION;
-                }).then(function (message) {
+                }, true, 'Interface definition of ' + this.iface + ' has not been received in defined timeout.').then(function (message) {
                     return message.def;
                 });
             }
@@ -477,6 +491,8 @@
         },
 
         waitForMessage: function waitForMessage(condition, useTimeout) {
+            var timeoutMessage = arguments[2] === undefined ? null : arguments[2];
+
             return new Platform.Promise((function (resolve, reject) {
                 var listener, timeout;
 
@@ -494,9 +510,13 @@
                     timeout = setTimeout((function () {
                         this.un(listener);
                         clearTimeout(timeout);
-                        // @todo: more comprehensive message here
-                        reject(new Error('Request timeouted'));
-                    }).bind(this), useTimeout);
+
+                        var message = 'Request timeouted.';
+                        if (timeoutMessage) {
+                            message = message + ' ' + timeoutMessage;
+                        }
+                        reject(new Error(message));
+                    }).bind(this), this.timeout);
                 }
             }).bind(this));
         },
@@ -582,7 +602,7 @@
             this.builder = Builder.create();
         },
 
-        getInterface: function getInterface(name) {
+        getInterface: function getInterface() {
             if (this.built) {
                 return Platform.ResolvedPromise(this.built);
             } else {
@@ -616,6 +636,7 @@
             this.iface = iface;
 
             this.connection = connection_connection.create({
+                autoDefinitionRetrieval: false,
                 iface: this.iface,
                 port: this.port
             });
@@ -631,16 +652,134 @@
 
     });
 
-    var server = Server;
+    var _server = Server;
 
     'use strict';
 
-    var index = {
-        Connection: connection_connection,
+    var Wokrkerio = {
+
+        /**
+         * Publish interface for client. Each interface with specified name could be published once on specified port
+         *
+         * @param {Object} port on which publish the implementation
+         * @param {String} name name of implementation to be consumed by client
+         * @param {Object} implementation object to be interfaced on client
+         * @return {self}
+         *
+         */
+        publishInterface: function publishInterface(port, name, implementation) {
+            if (this.isPublished(port, name)) {
+                throw new Error('Interface ' + name + ' is already published on port');
+            }
+
+            var server = _server.create({ port: port }).publishInterface(name, implementation);
+            this._published.push({
+                port: port,
+                name: name,
+                server: server
+            });
+
+            return this;
+        },
+
+        /**
+         * Subscribe to more interfaces at once
+         *
+         * @param {Object} port port with published the implementation
+         * @param {Array} names of interfaces to resolve
+         * @returns {Promise} with hash of resolved promises by name
+         */
+        getInterfaces: function getInterfaces(port, names) {
+            this.checkPortInterface(port);
+
+            if (!Array.isArray(names)) {
+                throw new Error('Please provide array of interface names');
+            }
+
+            var ifaces = {};
+
+            for (var i = 0; i < names.length; i++) {
+                ifaces[names[i]] = this.getInterface(port, names[i]);
+            }
+
+            return new Platform.HashedPromises(ifaces);
+        },
+
+        /**
+         * Subscribe to single interface
+         * @param {Object} port port with published the implementation
+         * @param {String} name of interface to resolve
+         * @returns {Promise} promise with result of Interface Class
+         */
+        getInterface: function getInterface(port, name) {
+            this.checkPortInterface(port);
+
+            if (typeof name !== 'string') {
+                throw new Error('Interface name must be String. Please use namespaced names such as MyApplication.MyInterface to prevent collisions');
+            }
+
+            // get subscribed promise first
+            var promise = null;
+            for (var i = 0; i < this._subscribed.length; i++) {
+                var subscribed = this._subscribed[i];
+                if (subscribed.port === port && subscribed.name === name) {
+                    promise = subscribed;
+                    break;
+                }
+            }
+
+            // not subscribed yet, subscribe
+            if (!promise) {
+                promise = client.create({ port: port, iface: name }).getInterface(name);
+                promise.name = name;
+                promise.port = port;
+                this._subscribed.push(promise);
+            }
+
+            return promise;
+        },
+
+        /**
+         * Returns whether interface with given name has been already published on port
+         *
+         * @todo: this should be much more clever
+         * Consider more threads using same port, this could be situation of SharedWorker or window
+         *
+         * @param {Object} port with published the implementation
+         * @param {String} name name of published interface
+         * @returns {boolean}
+         */
+        isPublished: function isPublished(port, name) {
+            for (var i = 0; i < this._published.length; i++) {
+                var published = this._published[i];
+                if (published.port === port && published.name === name) {
+                    return true;
+                }
+            }
+            return false;
+        },
+
+        /**
+         * Check whether port has proper interface
+         * @param {*} port
+         */
+        checkPortInterface: function checkPortInterface(port) {
+            if (!(typeof port === 'object' && typeof port.onmessage !== undefined && typeof port.addEventListener === 'function' && typeof port.postMessage === 'function')) {
+                if (!this.isPortInterface(port)) {
+                    throw new Error(['Port has invalid interface. Port must have addListener, postMessage method and message event.', 'Generally port should be window, worker or self inside worker.'].join());
+                }
+            }
+        },
+
+        _published: [],
+        _subscribed: [],
+
         Client: client,
-        Server: server,
-        Platform: Platform
-    };
+        Server: _server,
+        Connection: connection_connection,
+        Platform: Platform };
+
+    var index = Wokrkerio;
 
     return index;
 
