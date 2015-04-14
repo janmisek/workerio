@@ -26,6 +26,7 @@ var bundler = function (sourceDir, app, options) {
     options.dist = options.dist || dist;
 
     var babelized = babelTranspiler(sourceDir, {
+        comments: false,
         blacklist: options.blacklist || ['es6.modules']
     });
 
