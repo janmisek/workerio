@@ -4,7 +4,7 @@ import Platform from './../platform/platform';
 /**
  * Connection encapsulates all worker or window port and provides standardized
  * interface for client and server to communicate with each other
- * 
+ *
  * @module workerio
  * @namespace workerio.connection
  * @class Connection
@@ -42,7 +42,7 @@ var Connection = Platform.Object.extend(
 
                 // ignore non workerio messages
                 // ignore messages from other connections
-                if (data.prt === Connection.MSG_PROTOCOL && data.ifc === this.iface ) {
+                if (data.prt === Connection.MSG_PROTOCOL && data.ifc === this.iface) {
                     this.trigger('message', data);
 
                     if (data.t === Connection.MSG_TYPE_REQUEST) {
@@ -69,13 +69,17 @@ var Connection = Platform.Object.extend(
 
         initDefinitionRetrieval: function () {
             if (!this.serverDefinition) {
-                this.serverDefinition = this.waitForMessage(function (response) {
-                    return (
-                    response.t === Connection.MSG_TYPE_DEFINITION
-                    );
-                }).then(function (message) {
-                    return message.def;
-                });
+                this.serverDefinition = this
+
+                    .waitForMessage(function (response) {
+                        return (
+                        response.t === Connection.MSG_TYPE_DEFINITION
+                        );
+                    }, true, `Interface definition of ${this.iface} has not been received in defined timeout.`)
+
+                    .then(function (message) {
+                        return message.def;
+                    });
             }
             return this.serverDefinition;
         },
@@ -96,7 +100,7 @@ var Connection = Platform.Object.extend(
         },
 
 
-        waitForMessage: function (condition, useTimeout) {
+        waitForMessage: function (condition, useTimeout, timeoutMessage = null) {
             return new Platform.Promise(function (resolve, reject) {
                 var listener, timeout;
 
@@ -114,9 +118,13 @@ var Connection = Platform.Object.extend(
                     timeout = setTimeout(function () {
                         this.un(listener);
                         clearTimeout(timeout);
-                        // @todo: more comprehensive message here
-                        reject(new Error('Request timeouted'));
-                    }.bind(this), useTimeout);
+
+                        var message = 'Request timeouted.';
+                        if (timeoutMessage) {
+                            message = message + ' ' + timeoutMessage;
+                        }
+                        reject(new Error(message));
+                    }.bind(this), this.timeout);
                 }
 
             }.bind(this));
