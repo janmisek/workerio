@@ -20,7 +20,7 @@ var shoutService = {
 
 };
 
-self.workerio.Server
-    .create({port: self})
-    .publishInterface('shoutService', shoutService);
+self.workerio
+    .publishInterface(self, 'shoutService', shoutService)
+    .publishInterface(self, 'shoutService2', shoutService);
 

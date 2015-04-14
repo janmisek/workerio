@@ -3,6 +3,7 @@
 import Client from './../client';
 import Server from './../server';
 import Platform from './../platform/platform';
+import Workerio from './../index';
 
 export default function () {
 
@@ -17,15 +18,14 @@ export default function () {
         return new Platform.Promise(function (resolve) {
 
             var worker = new Worker('worker.js');
-            var client = Client.create({port: worker, iface: 'shoutService'});
-            client.getInterface().then(function (ShoutService) {
-                var shoutService = ShoutService.create();
-                shoutService.shout('Hello world').then(function (result) {
-                    equal(result, 'Hello world');
-                    resolve();
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
+                    var shoutService = ShoutService.create();
+                    shoutService.shout('Hello world').then(function (result) {
+                        equal(result, 'Hello world');
+                        resolve();
+                    });
                 });
-
-            });
 
         });
     });
@@ -34,29 +34,29 @@ export default function () {
         return new Platform.Promise(function (resolve) {
 
             var worker = new Worker('worker.js');
-            var client = Client.create({port: worker, iface: 'shoutService'});
-            client.getInterface().then(function (ShoutService) {
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
 
-                var MyShoutService = ShoutService.extend({
-                    shout: function (name) {
-                        var supr = ShoutService.prototype.shout.apply(this, arguments);
+                    var MyShoutService = ShoutService.extend({
+                        shout: function (name) {
+                            var supr = ShoutService.prototype.shout.apply(this, arguments);
 
-                        return supr.then(function (result) {
-                            return result + ', How are you?';
-                        });
-                    }
-                });
-
-                var shoutService = MyShoutService.create();
-
-                shoutService.shout('Hello Michael')
-                    .then(function (result) {
-                        equal(result, 'Hello Michael, How are you?');
-                        resolve();
+                            return supr.then(function (result) {
+                                return result + ', How are you?';
+                            });
+                        }
                     });
 
+                    var shoutService = MyShoutService.create();
 
-            });
+                    shoutService.shout('Hello Michael')
+                        .then(function (result) {
+                            equal(result, 'Hello Michael, How are you?');
+                            resolve();
+                        });
+
+
+                });
 
         });
     });
@@ -65,29 +65,30 @@ export default function () {
     test('Engine works for multiple calls', function () {
         return new Platform.Promise(function (resolve) {
 
-            var worker = new Worker('worker.js');
             var k = 50;
             var j = 0;
-            var client = Client.create({port: worker, iface: 'shoutService'});
-            client.getInterface().then(function (ShoutService) {
-                var shoutService = ShoutService.create();
-                var all = [];
-                for (var i = 0; i < k; i++) {
-                    all.push(shoutService.shout('Hello world').then(function () {
-                        j++;
-                    }));
-                    all.push(shoutService.shoutAsynchronously('Hello world').then(function () {
-                        j++;
-                    }));
-                }
-                return Platform.Promise
-                    .all(all)
-                    .then(function () {
-                        ok('resolved');
-                        equal(j, k * 2);
-                        resolve();
-                    });
-            });
+
+            var worker = new Worker('worker.js');
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
+                    var shoutService = ShoutService.create();
+                    var all = [];
+                    for (var i = 0; i < k; i++) {
+                        all.push(shoutService.shout('Hello world').then(function () {
+                            j++;
+                        }));
+                        all.push(shoutService.shoutAsynchronously('Hello world').then(function () {
+                            j++;
+                        }));
+                    }
+                    return Platform.Promise
+                        .all(all)
+                        .then(function () {
+                            ok('resolved');
+                            equal(j, k * 2);
+                            resolve();
+                        });
+                });
 
         });
     });
@@ -96,16 +97,16 @@ export default function () {
         return new Platform.Promise(function (resolve) {
 
             var worker = new Worker('worker.js');
-            var client = Client.create({port: worker, iface: 'shoutService'});
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
 
-            client.getInterface().then(function (ShoutService) {
-                var shoutService = ShoutService.create();
-                shoutService.shoutAsynchronously('Hello world').then(function (result) {
-                    equal(result, 'Hello world');
-                    resolve();
+                    var shoutService = ShoutService.create();
+                    shoutService.shoutAsynchronously('Hello world').then(function (result) {
+                        equal(result, 'Hello world');
+                        resolve();
+                    });
+
                 });
-
-            });
 
 
         });
@@ -115,16 +116,29 @@ export default function () {
         return new Platform.Promise(function (resolve) {
 
             var worker = new Worker('worker.js');
-            var client = Client.create({port: worker, iface: 'shoutService'});
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
+                    var shoutService = ShoutService.create();
+                    shoutService.getValueOfObject().then(function (result) {
+                        equal(result, 'value-of-object');
+                        resolve();
+                    });
 
-            client.getInterface().then(function (ShoutService) {
-                var shoutService = ShoutService.create();
-                shoutService.getValueOfObject().then(function (result) {
-                    equal(result, 'value-of-object');
-                    resolve();
                 });
 
-            });
+
+        });
+    });
+
+    test('More interfaces are retrieved at once', function () {
+        return new Platform.Promise(function (resolve) {
+
+            var worker = new Worker('worker.js');
+            Workerio.getInterfaces(worker, ['shoutService', 'shoutService2'])
+                .then(function (Services) {
+                    ok(typeof Services.shoutService === 'function');
+                    ok(typeof Services.shoutService2 === 'function');
+                });
 
 
         });

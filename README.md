@@ -1,5 +1,4 @@
 
-
 ```
       __   __        ___  __      __
 |  | /  \ |__) |__/ |__  |__)  | /  \
@@ -37,7 +36,7 @@ var shoutService = {
 importScripts('workerio.js');
 
 // lets publish shoutService to client
-Server.create({port: self})
+self.workerio
 	.publishInterface('shoutService', shoutService);
 
 ```
@@ -48,41 +47,49 @@ Server.create({port: self})
 define client in main browser thread:
 ```js
 
-// create the client
-var client = window.workerio.Client.create({
-     port: new Worker('worker.js'), 
-     iface: 'shoutService'
-});
+// create the worker
+var worker = new Worker('worker.js');
 
 // get shout service interface
-client.getInterface().then(function (ShoutService) {
+window.workerio
+	.getInterface(worker, 'shoutService')
+	.then(function (ShoutService) {
 
         // use the shoutService
         var shoutService = ShoutService.create();
-        
         shoutService
              .shout('Michael')
              .then(function (result) {
-                console.log(result); // Hello Michael
+                console.log(result);
+                // Hello Michael
        	      });
 
         shoutService
               .pssst()
               .then(function (result) {
-                console.log(result); // now it is silence here :)
+                console.log(result); 
+                // now it is silence here :)
        	      });
        		
        		
 });
 ```
-In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object
-`shoutService` to workerio `Client` ran in browser thread.  Client did create for us proxy object with same interface
-as the worker's shoutService.  So we can call any method of the worker object from window.
+In example above we have web worker in `worker.js` with workerio `Server` which publishes interface of object `shoutService` to workerio `Client` ran in browser thread.  
 
-Because interprocess communication between main browser thread and worker utilizes asynchronous `postMessage`
-mechanism all executions on client interface returns promises compliant with Promise/A+.
+Client did create for us proxy object with same interface as the worker's shoutService.  So we can call any method of the worker object from window.
+
+Because inter-process communication between main browser thread and worker utilizes asynchronous `postMessage`mechanism all executions on client interface returns promises compliant with Promise/A+.
 
 ## API
+
+**workerio.getInterface**
+
+Main client api method which retrieves interfaces from server.
+
+**workerio.publishInterface**
+
+Main server api method which publishes interfaces to client.
+
 
 **Server**
 
@@ -97,33 +104,6 @@ Should be created in browser's main thread around the port. Client retrieves int
 and builds interface class for you. You can then extend the interface class to override or implement new methods.
 The `iface` name must be same as the server one. Client can provide up to single interface.
 
-
-extend client interface:
-```js
-
-
-client.getInterface().then(function (ShoutService) {
-	
-	var MyShoutService = ShoutService.extend({
-	    shout: function(name) {
-	       var supr = ShoutService.prototype.shout.apply(this,arguments);
-	       return supr.then(function(result) {
-                   return result + ', How are you?';
-                });
-             }
-	});
-
-	var shoutService = MyShoutService.create();
-    	shoutService
-    	    .shout('Michael')
-    	    .then(function (result) {
-    	        console.log(result); // Hello Michael, How are you?
-    	    });
-});
-
-```
-
-
 **Port**
 
 Generally Worker.IO could work with any port implementation as `window`, `Worker`, `SharedWorker` or even custom made port. Port must implement `postMessage` method and `message` event. 
@@ -136,7 +116,51 @@ Wraps communication between `Server` and `Client` over port to some standardized
 
 `Builder` is used to build client interfaces (the classes) and to prepare definition of interface to be sent by `Server` to the `Client`. Builder utilizes `PropertyBuilders` which builds proxy methods on client interface for each property of interfaced object depending on its type.
 
+## Advanced usage examples
 
+**Extend client interface**
+```js
+
+
+window.workerio
+	.getInterface(worker, 'shoutService')
+	.then(function (ShoutService) {
+	
+		MyShoutService = ShoutService.extend({
+		    shout: function(name) {
+		       var supr = ShoutService.prototype.shout.apply(this,arguments);
+		       return supr.then(function(result) {
+                   return result + ', How are you?';
+               });
+             }
+	});
+
+// somewhere in the code later we will use extended class
+var shoutService = MyShoutService.create();
+   	shoutService
+   	    .shout('Michael')
+   	    .then(function (result) {
+   	        console.log(result); 
+   	        // Hello Michael, How are you?
+   	    });
+});
+
+```
+
+**Retrieve more interfaces at once**:
+```js
+
+
+window.workerio
+	.getInterfaces(worker, ['shoutService', 'indexingService'])
+	.then(function (Services) {
+		var indexingService = Services.IndexingService.create();
+		var shoutService = Services.ShoutService.create();
+
+		// use services ...
+
+	});
+```
 
 
 ## What can be proxied
@@ -144,13 +168,12 @@ Wraps communication between `Server` and `Client` over port to some standardized
 - asynchronous method of object which returns Promise/A+
 - properties of objects - as automatically generated getters and setters (currently wip)
 
-
-
 ## Roadmap
 Worker IO is currently WIP. Future plans are:
 
 - finish the docs
-- better errror handling
+- better errror handling, remote methods should respond with errors
+- ability to specify base class for interface proxy
 - create property builder for setting/getting properties and even objects
 - filter properties to be interfaced
 
