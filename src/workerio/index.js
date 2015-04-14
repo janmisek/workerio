@@ -3,12 +3,8 @@ import Server from './server';
 import Platform from './platform/platform';
 import Connection from './connection/connection';
 
-//@todo: test cannot publish existing
-//@todo: test getInterface returns same interface
 //@todo: failed call to interfaced methods respond with error, get rid of timeout
-//@todo: test isPortInterface
-//@todo: test hasherized promise, at least for proper key array pairs
-//@todo: add integration test for request timeout for definition when user use wrong interface name, usable would be to pass exception text to waitForMessage
+//@todo: add test for failed method to inform about related serviceName
 
 /**
  *
@@ -34,7 +30,11 @@ var Wokrkerio = {
         }
 
         var server = Server.create({port: port}).publishInterface(name, implementation);
-        this._published.push(server);
+        this._published.push({
+            port: port,
+            name: name,
+            server: server
+        });
 
         return this;
     },
@@ -81,6 +81,7 @@ var Wokrkerio = {
             var subscribed = this._subscribed[i];
             if (subscribed.port === port && subscribed.name === name) {
                 promise = subscribed;
+                break;
             }
         }
 
@@ -89,7 +90,9 @@ var Wokrkerio = {
             promise = Client.create({port: port, iface: name}).getInterface(name);
             promise.name = name;
             promise.port = port;
+            this._subscribed.push(promise);
         }
+
 
         return promise;
     },

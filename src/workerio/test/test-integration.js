@@ -1,9 +1,10 @@
-/* global require, module, test, ok, equal, deepEqual */
+/* global require, module, test, ok, equal, deepEqual, throws, notEqual */
 
 import Client from './../client';
 import Server from './../server';
 import Platform from './../platform/platform';
 import Workerio from './../index';
+import PortMock from './mock/port';
 
 export default function () {
 
@@ -130,6 +131,59 @@ export default function () {
         });
     });
 
+
+    test('More more parameters and object returned', function () {
+        return new Platform.Promise(function (resolve) {
+
+            var worker = new Worker('worker.js');
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
+                    var shoutService = ShoutService.create();
+                    return shoutService
+                        .moreParametersReturnsObject('1', '2')
+                        .then(function (o) {
+                            deepEqual(o, {param1: '1', param2: '2'});
+                            resolve();
+                        });
+                });
+        });
+    });
+
+    test('Cannot publish existing interface', function () {
+        Workerio.publishInterface(PortMock, 'theInterface', {});
+        throws(function () {
+            Workerio.publishInterface(PortMock, 'theInterface', {});
+        });
+    });
+
+    test('Only port interface is allowed', function () {
+        Workerio.checkPortInterface(PortMock);
+        throws(function () {
+            Workerio.checkPortInterface({});
+        });
+    });
+
+
+    test('Twice request for interface returns same one', function () {
+        return new Platform.Promise(function (resolve) {
+
+            var worker = new Worker('worker.js');
+
+
+            var p1 = Workerio.getInterface(worker, 'shoutService');
+            var p2 = Workerio.getInterface(worker, 'shoutService');
+
+            equal(p1, p2);
+
+            return Platform.AllPromises([p1, p2])
+                .then(function (more) {
+                    equal(more[0], more[1]);
+                    resolve()
+                });
+
+        });
+    });
+
     test('More interfaces are retrieved at once', function () {
         return new Platform.Promise(function (resolve) {
 
@@ -138,11 +192,28 @@ export default function () {
                 .then(function (Services) {
                     ok(typeof Services.shoutService === 'function');
                     ok(typeof Services.shoutService2 === 'function');
+                    resolve();
                 });
 
 
         });
     });
+
+    test('Timeouted interface retrieval contains proper exception', function () {
+        return new Platform.Promise(function (resolve) {
+
+            var serviceName = 'not-published-service';
+            var worker = new Worker('worker.js');
+            Workerio.getInterface(worker, serviceName)
+                .catch(function (error) {
+                    notEqual(error.message.indexOf(serviceName), -1);
+                    resolve();
+                });
+
+
+        });
+    });
+
 
 
 }

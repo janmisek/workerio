@@ -1,10 +1,3 @@
-var ResolvedPromise = function () {
-    var args = arguments;
-    return new Promise(function (resolve) {
-        resolve.apply(resolve, args);
-    });
-};
-
 var HashedPromises = function (object) {
     var promises = [];
     var keys = [];
@@ -26,8 +19,8 @@ var HashedPromises = function (object) {
 };
 
 export default {
-    Promise: Promise,
-    HashedPromises: HashedPromises,
-    ResolvedPromise: ResolvedPromise
+    AllPromises: Promise.all.bind(Promise),
+    ResolvedPromise: Promise.resolve.bind(Promise),
+    HashedPromises: HashedPromises
 };
 
