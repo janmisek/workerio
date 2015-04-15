@@ -144,7 +144,6 @@ var shoutService = MyShoutService.create();
    	        console.log(result); 
    	        // Hello Michael, How are you?
    	    });
-});
 
 ```
 
