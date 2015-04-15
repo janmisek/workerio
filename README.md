@@ -134,6 +134,7 @@ window.workerio
                });
              }
 	});
+});
 
 // somewhere in the code later we will use extended class
 var shoutService = MyShoutService.create();
