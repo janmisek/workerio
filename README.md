@@ -134,6 +134,7 @@ window.workerio
                });
              }
 	});
+});
 
 // somewhere in the code later we will use extended class
 var shoutService = MyShoutService.create();
@@ -143,7 +144,6 @@ var shoutService = MyShoutService.create();
    	        console.log(result); 
    	        // Hello Michael, How are you?
    	    });
-});
 
 ```
 
