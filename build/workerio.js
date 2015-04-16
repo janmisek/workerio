@@ -4,8 +4,6 @@
     global.workerio = factory()
 }(this, function () { 'use strict';
 
-    // wrapper function to call be able call 'new' with given arguments
-    // http://stackoverflow.com/questions/1606797/use-of-apply-with-new-operator-is-this-possible'
     'use strict';
 
     function construct(constructor, args) {
@@ -32,8 +30,6 @@
 
         return extend;
     })(function () {
-
-        // create constructor for class
         var constructor = function constructor() {
             for (var i = 0; i < arguments.length; i++) {
                 var extension = arguments[i];
@@ -57,7 +53,6 @@
             }
         };
 
-        // update prototype
         var superprototype = this.prototype;
         var prototype = Object.create(superprototype);
         for (var i = 0; i < arguments.length; i++) {
@@ -210,18 +205,6 @@
     'use strict';
 
     var Helpers = Platform.Object.extend({
-
-        /**
-         * Executes method on proxied object on server. Make
-         * synchronous and asynchronous methods compatibile
-         * returning Promise/A+ always
-         *
-         * @param {Object} ctx
-         * @param {Function} impl
-         * @param {Array}
-         * @param {Function} callback
-         * @return {workerio.platform.Promise}
-         */
         executeImplementation: function executeImplementation(ctx, impl, args) {
 
             return new Platform.Promise(function (resolve) {
@@ -244,27 +227,12 @@
     'use strict';
 
     var FunctionPropertyBuilder = Platform.Object.extend({
-
-        /**
-         * @type {workerio.builder.Helpers}
-         */
         helpers: null,
 
         init: function init() {
             this.helpers = helpers.create();
         },
-
-        /**
-         * Builds methods used on client interface to execute server methods
-         * Using connection
-         * @param {workerio.connection.Connection} connection
-         * @param {Object} serverDefinition definition of interface received from server
-         * @param {Object} mixin contains built definition
-         * @param {String} propertyName name of property of interface
-         * @returns void
-         */
         buildClientInterface: function buildClientInterface(connection, serverDefinition, mixin, propertyName) {
-            // create proxy method on mixin
             mixin[propertyName] = function () {
                 var args = Array.prototype.slice.call(arguments);
                 return connection.request(propertyName, args).then(function (response) {
@@ -272,21 +240,9 @@
                 });
             };
 
-            // update client's server definition
             mixin.serverDefinition[propertyName] = serverDefinition[propertyName];
         },
-
-        /**
-         * Builds methods on server interface to listen and respond to incomming methods call from client.
-         * Using connection
-         * @param {workerio.connection.Connection} connection
-         * @param {Object} implementation object to be proxied on client
-         * @param {Object} mixin to add implementation definition
-         * @param {String} propertyName property name to be built
-         * @returns void
-         */
         buildServerInterface: function buildServerInterface(connection, implementation, mixin, propertyName) {
-            // assign the method to be run later
             var ctx = implementation;
             var method = implementation[propertyName];
             var executeImplementation = this.helpers.executeImplementation;
@@ -295,7 +251,9 @@
                 connection.on('request', (function (request) {
                     if (request.m === propertyName) {
                         executeImplementation(ctx, method, request.a).then(function (result) {
-                            connection.respond(request, result);
+                            connection.respond(request, true, result);
+                        })['catch'](function (error) {
+                            connection.respond(request, false, error);
                         });
                     }
                 }).bind(this));
@@ -415,7 +373,7 @@
 
         port: null,
         iface: null,
-        timeout: 500,
+        timeout: 2000,
         serverDefinition: null,
         autoDefinitionRetrieval: true,
 
@@ -427,21 +385,17 @@
         },
 
         initPort: function initPort() {
-            // validate port
             if (!this.port || !this.port.postMessage) {
                 throw new Error('Invalid port');
             }
-            // validate iface name
+
             if (!this.iface) {
                 throw new Error('Interface name not specified');
             }
 
-            // interconnect with port
             this.port.addEventListener('message', (function (event) {
                 var data = event.data;
 
-                // ignore non workerio messages
-                // ignore messages from other connections
                 if (data.prt === Connection.MSG_PROTOCOL && data.ifc === this.iface) {
                     this.trigger('message', data);
 
@@ -496,7 +450,6 @@
             return new Platform.Promise((function (resolve, reject) {
                 var listener, timeout;
 
-                // listen for response
                 listener = this.on('message', (function (response) {
                     if (condition(response)) {
                         this.un(listener);
@@ -506,7 +459,6 @@
                 }).bind(this));
 
                 if (useTimeout) {
-                    // set response timeout
                     timeout = setTimeout((function () {
                         this.un(listener);
                         clearTimeout(timeout);
@@ -520,28 +472,34 @@
                 }
             }).bind(this));
         },
-
-        respond: function respond(request, args) {
+        respond: function respond(request, isSuccess, args) {
             var response = {
                 prt: Connection.MSG_PROTOCOL,
                 t: Connection.MSG_TYPE_RESPONSE,
+                s: isSuccess,
                 ifc: this.iface,
-                d: request.d,
-                a: args
+                d: request.d
             };
+
+            if (isSuccess) {
+                response.a = args;
+            } else {
+                var error = {
+                    m: typeof args.message === 'string' ? args.message : String(args),
+                    s: typeof args.stack === 'string' ? args.stack : ''
+                };
+                response.a = error;
+            }
 
             this.port.postMessage(response);
 
             return response;
         },
-
         request: function request(callee, args) {
             var request = undefined,
                 listener = undefined,
                 timeout = undefined;
 
-            //@todo: better random dialog
-            // create request object
             request = {
                 prt: Connection.MSG_PROTOCOL,
                 t: Connection.MSG_TYPE_REQUEST,
@@ -553,10 +511,19 @@
 
             var promise = this.waitForMessage(function (response) {
                 return response.t === Connection.MSG_TYPE_RESPONSE && response.d === request.d;
-            }, this.timeout);
+            });
 
-            // post the message
             this.port.postMessage(request);
+
+            promise = promise.then(function (response) {
+                if (!response.s) {
+                    var message = response.a.m ? response.a.m : 'Unexpected error';
+                    var error = new Error(message);
+                    error.stack = response.a.s;
+                    throw error;
+                }
+                return response;
+            });
 
             return promise;
         }
@@ -657,16 +624,6 @@
     'use strict';
 
     var Wokrkerio = {
-
-        /**
-         * Publish interface for client. Each interface with specified name could be published once on specified port
-         *
-         * @param {Object} port on which publish the implementation
-         * @param {String} name name of implementation to be consumed by client
-         * @param {Object} implementation object to be interfaced on client
-         * @return {self}
-         *
-         */
         publishInterface: function publishInterface(port, name, implementation) {
             if (this.isPublished(port, name)) {
                 throw new Error('Interface ' + name + ' is already published on port');
@@ -681,14 +638,6 @@
 
             return this;
         },
-
-        /**
-         * Subscribe to more interfaces at once
-         *
-         * @param {Object} port port with published the implementation
-         * @param {Array} names of interfaces to resolve
-         * @returns {Promise} with hash of resolved promises by name
-         */
         getInterfaces: function getInterfaces(port, names) {
             this.checkPortInterface(port);
 
@@ -704,13 +653,6 @@
 
             return new Platform.HashedPromises(ifaces);
         },
-
-        /**
-         * Subscribe to single interface
-         * @param {Object} port port with published the implementation
-         * @param {String} name of interface to resolve
-         * @returns {Promise} promise with result of Interface Class
-         */
         getInterface: function getInterface(port, name) {
             this.checkPortInterface(port);
 
@@ -718,7 +660,6 @@
                 throw new Error('Interface name must be String. Please use namespaced names such as MyApplication.MyInterface to prevent collisions');
             }
 
-            // get subscribed promise first
             var promise = null;
             for (var i = 0; i < this._subscribed.length; i++) {
                 var subscribed = this._subscribed[i];
@@ -728,7 +669,6 @@
                 }
             }
 
-            // not subscribed yet, subscribe
             if (!promise) {
                 promise = client.create({ port: port, iface: name }).getInterface(name);
                 promise.name = name;
@@ -738,17 +678,6 @@
 
             return promise;
         },
-
-        /**
-         * Returns whether interface with given name has been already published on port
-         *
-         * @todo: this should be much more clever
-         * Consider more threads using same port, this could be situation of SharedWorker or window
-         *
-         * @param {Object} port with published the implementation
-         * @param {String} name name of published interface
-         * @returns {boolean}
-         */
         isPublished: function isPublished(port, name) {
             for (var i = 0; i < this._published.length; i++) {
                 var published = this._published[i];
@@ -758,11 +687,6 @@
             }
             return false;
         },
-
-        /**
-         * Check whether port has proper interface
-         * @param {*} port
-         */
         checkPortInterface: function checkPortInterface(port) {
             if (!(typeof port === 'object' && typeof port.onmessage !== undefined && typeof port.addEventListener === 'function' && typeof port.postMessage === 'function')) {
                 if (!this.isPortInterface(port)) {

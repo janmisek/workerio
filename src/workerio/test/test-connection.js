@@ -10,6 +10,7 @@ export default function () {
         };
     };
 
+    //@todo: use PortMock of mock namespace
     var mockedPort = function () {
         var PortMock = Platform.Object
             .extend(Platform.Evented)
@@ -128,7 +129,7 @@ export default function () {
 
         port.on('message', function (msg) {
             if (msg.data.t === Connection.MSG_TYPE_REQUEST) {
-                c.respond(msg.data, {value: 1});
+                c.respond(msg.data, true, {value: 1});
             }
         });
 
@@ -183,7 +184,6 @@ export default function () {
 
     });
 
-
     test('response mismatch cannot happen', function () {
         var port = mockedPort();
 
@@ -194,20 +194,39 @@ export default function () {
         });
 
         port.on('message', function (msg) {
-            if (msg.data.type === 'request') {
-                var rq = {
-                    d: 'mismatched dialog',
-                    t: Connection.MSG_TYPE_REQUEST,
-                    m: 'something',
-                    a: {}
+            msg = msg.data;
+
+            if (msg.t === 'rx') {
+                var rq;
+
+                // mismatched one
+                rq = {
+                    prt: msg.prt,
+                    t: Connection.MSG_TYPE_RESPONSE,
+                    s: true,
+                    ifc: 'something',
+                    d: 'something'
                 };
-                c.respond(rq, {value: 1});
+
+                c.respond(rq, true, {value: false});
+
+                // proper one
+                rq = {
+                    prt: msg.prt,
+                    t: Connection.MSG_TYPE_RESPONSE,
+                    s: true,
+                    ifc: msg.ifc,
+                    d: msg.d
+                };
+
+                c.respond(rq, true, {value: true});
+
             }
         });
 
-        return c.request('method', {param: 'value'})
-            .catch(function (data) {
-                ok('should timeouted because no response came in');
+        return c.request('method')
+            .then(function (data) {
+                ok(data.a.value);
             });
 
     });
