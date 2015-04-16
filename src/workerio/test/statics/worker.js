@@ -10,6 +10,14 @@ var shoutService = {
         return this.valueOfObject;
     },
 
+    failedWithError: function() {
+        throw new Error('Error happens');
+    },
+
+    failedWithString: function() {
+        throw 'Error happens';
+    },
+
     moreParametersReturnsObject: function(param1, param2) {
         return {param1: param1, param2: param2};
     },

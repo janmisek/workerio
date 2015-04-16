@@ -66,7 +66,10 @@ var FunctionPropertyBuilder = Platform.Object.extend({
                 if (request.m === propertyName) {
                     executeImplementation(ctx, method, request.a)
                         .then(function (result) {
-                            connection.respond(request, result);
+                            connection.respond(request, true, result);
+                        })
+                        .catch(function(error) {
+                            connection.respond(request, false, error);
                         });
 
                 }
