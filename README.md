@@ -37,7 +37,7 @@ importScripts('workerio.js');
 
 // lets publish shoutService to client
 self.workerio
-	.publishInterface('shoutService', shoutService);
+	.publishInterface(self, 'shoutService', shoutService);
 
 ```
 
@@ -172,11 +172,13 @@ window.workerio
 Worker IO is currently WIP. Future plans are:
 
 - finish the docs
-- better errror handling, remote methods should respond with errors
+- better errror handling - resolve timeouting when worker loads itself for too long
 - ability to specify base class for interface proxy
+- seperate platform to integrate with ember
+- create ember addon with service integration
 - create property builder for setting/getting properties and even objects
-- filter properties to be interfaced
-- make compatibile with window - target origin is needed Failed to execute 'postMessage' on 'Window': Invalid target origin '' in a call to 'postMessage'
+- filter properties/methods not to be interfaced
+- make compatibile with window - target origin is needed regarding the error "Failed to execute 'postMessage' on 'Window': Invalid target origin '' in a call to 'postMessage'"
 
 ## Test and build
 Test

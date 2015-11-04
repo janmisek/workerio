@@ -214,6 +214,43 @@ export default function () {
         });
     });
 
+    test('Should return exception when failed with error', function () {
+        //@test expected and unexcpected error
+        return new Platform.Promise(function (resolve) {
+
+            var worker = new Worker('worker.js');
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
+                    var shoutService = ShoutService.create();
+                    return shoutService
+                        .failedWithError()
+                        .catch(function (e) {
+                            equal(e.message, 'Error happens');
+                            ok(e.stack);
+                            resolve();
+                        });
+                });
+        });
+    });
+
+    test('Should return exception when failed with string', function () {
+        //@test expected and unexcpected error
+        return new Platform.Promise(function (resolve) {
+
+            var worker = new Worker('worker.js');
+            Workerio.getInterface(worker, 'shoutService')
+                .then(function (ShoutService) {
+                    var shoutService = ShoutService.create();
+                    return shoutService
+                        .failedWithString()
+                        .catch(function (e) {
+                            equal(e.message, 'Error happens');
+                            ok(!e.stack);
+                            resolve();
+                        });
+                });
+        });
+    });
 
 
 }

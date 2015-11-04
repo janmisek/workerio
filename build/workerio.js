@@ -251,7 +251,9 @@
                 connection.on('request', (function (request) {
                     if (request.m === propertyName) {
                         executeImplementation(ctx, method, request.a).then(function (result) {
-                            connection.respond(request, result);
+                            connection.respond(request, true, result);
+                        })['catch'](function (error) {
+                            connection.respond(request, false, error);
                         });
                     }
                 }).bind(this));
@@ -371,7 +373,7 @@
 
         port: null,
         iface: null,
-        timeout: 500,
+        timeout: 2000,
         serverDefinition: null,
         autoDefinitionRetrieval: true,
 
@@ -470,21 +472,29 @@
                 }
             }).bind(this));
         },
-
-        respond: function respond(request, args) {
+        respond: function respond(request, isSuccess, args) {
             var response = {
                 prt: Connection.MSG_PROTOCOL,
                 t: Connection.MSG_TYPE_RESPONSE,
+                s: isSuccess,
                 ifc: this.iface,
-                d: request.d,
-                a: args
+                d: request.d
             };
+
+            if (isSuccess) {
+                response.a = args;
+            } else {
+                var error = {
+                    m: typeof args.message === 'string' ? args.message : String(args),
+                    s: typeof args.stack === 'string' ? args.stack : ''
+                };
+                response.a = error;
+            }
 
             this.port.postMessage(response);
 
             return response;
         },
-
         request: function request(callee, args) {
             var request = undefined,
                 listener = undefined,
@@ -501,9 +511,19 @@
 
             var promise = this.waitForMessage(function (response) {
                 return response.t === Connection.MSG_TYPE_RESPONSE && response.d === request.d;
-            }, this.timeout);
+            });
 
             this.port.postMessage(request);
+
+            promise = promise.then(function (response) {
+                if (!response.s) {
+                    var message = response.a.m ? response.a.m : 'Unexpected error';
+                    var error = new Error(message);
+                    error.stack = response.a.s;
+                    throw error;
+                }
+                return response;
+            });
 
             return promise;
         }
