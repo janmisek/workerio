@@ -37,7 +37,7 @@ importScripts('workerio.js');
 
 // lets publish shoutService to client
 self.workerio
-	.publishInterface('shoutService', shoutService);
+	.publishInterface(self, 'shoutService', shoutService);
 
 ```
 
