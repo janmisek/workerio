@@ -91,12 +91,15 @@ var Connection = Platform.Object.extend(
         },
 
         sendDefinition: function (serverDefinition) {
+            const l = location
+            const origin = typeof window != 'undefined' && this.port===window
+                ? `${l.protocol}//${l.hostname}:${l.port}` : undefined;
             this.port.postMessage({
                 prt: Connection.MSG_PROTOCOL,
                 ifc: this.iface,
                 t: Connection.MSG_TYPE_DEFINITION,
                 def: serverDefinition
-            });
+            }, origin);
         },
 
 
@@ -166,7 +169,10 @@ var Connection = Platform.Object.extend(
                 response.a = error;
             }
 
-            this.port.postMessage(response);
+            const l = location
+            const origin = typeof window != 'undefined' && this.port===window
+                ? `${l.protocol}//${l.hostname}:${l.port}` : undefined;
+            this.port.postMessage(response, origin);
 
             return response;
         },
@@ -206,7 +212,10 @@ var Connection = Platform.Object.extend(
             });
 
             // post the message
-            this.port.postMessage(request);
+            const l = location
+            const origin = typeof window != 'undefined' && this.port===window
+                ? `${l.protocol}//${l.hostname}:${l.port}` : undefined;
+            this.port.postMessage(request, origin);
 
             // resolve errors
             promise = promise.then(function(response) {
